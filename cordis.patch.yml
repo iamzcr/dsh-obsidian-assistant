@@ -1,0 +1,23 @@
+# The dsh-obsidian-assistant bundle patch: inserts one toolset plugin into a
+# profile tree. Applied AFTER the base bundle (it injects `tools` + `fs`), this
+# row adds the eleven obsidian_* tools to the shared tool registry.
+#
+# To use, add "dsh-obsidian-assistant" to your profile's `dsh.profile.bundles`
+# (or install it into `$DSH_HOME/profiles/<name>/node_modules`), then override
+# the `config.vaultPath` below (or set it here and re-install). A later layer
+# may target this row by id `obsidian-assistant` to change config or disable it.
+
+- insert:
+    - id: obsidian-assistant
+      name: 'dsh-obsidian-assistant'
+      config:
+        # REQUIRED: absolute path to your Obsidian vault root.
+        vaultPath: 'D:/my-notes'
+        # Optional: Obsidian "Local REST API" community plugin endpoint.
+        apiUrl: 'https://127.0.0.1:27124'
+        apiToken: ''
+        enableRestApi: true
+        excludePatterns:
+          - '.obsidian'
+          - '.trash'
+        maxResults: 50

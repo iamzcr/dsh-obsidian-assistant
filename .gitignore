@@ -1,0 +1,36 @@
+# Node / dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Compiled TypeScript build info (lib/ IS committed: package.json main/types
+# point at it and profiles load it via link; `prepare` rebuilds on install)
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Runtime / editor / OS
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests / temp
+*.tmp
+*.log
+node_modules/.cache/
+coverage/
+
+# Local sensitive dsh config (never commit real API keys / vault paths)
+dsh.config*.yaml
+!dsh.config.example.yaml
