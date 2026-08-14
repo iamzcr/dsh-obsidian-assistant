@@ -1,4 +1,4 @@
-# obsidian-assistant
+# dsh-obsidian-assistant
 
 DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（vault），提供搜索、读写笔记、双向链接 / 关系图谱、批量整理，并通过 Obsidian 的 "Local REST API" 社区插件调用高级能力（高速全文搜索、触发命令 / 模板）。
 
@@ -41,7 +41,7 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 # $DSH_HOME/profiles/<name>/cordis.patch.yml（顶层数组里追加）
 - insert:
     - id: obsidian-assistant
-      name: '@mypj/obsidian-assistant'
+      name: 'dsh-obsidian-assistant'
       config:
         vaultPath: 'D:/my-notes'            # 必填：vault 根目录（含 .obsidian 的目录）
         apiUrl: 'https://127.0.0.1:27124'   # 可选：Local REST API（默认 https + 自签名）

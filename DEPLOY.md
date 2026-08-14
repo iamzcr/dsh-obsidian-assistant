@@ -1,4 +1,4 @@
-# 如何接入并使用 `@mypj/obsidian-assistant`
+# 如何接入并使用 `dsh-obsidian-assistant`
 
 本插件是 DeepSeek Harness 的一个 **profile bundle**，通过 harness 的 profile 系统加载。下面是完整、可操作的接入步骤（基于你机器上运行的 `dsh` 版本 `0.1.0-rc.6` 验证过的机制）。
 
@@ -14,7 +14,7 @@
 
 ```bash
 # 1. 用现有 profile（例如 web），或新建一个
-dsh plugin --profile web add @mypj/obsidian-assistant
+dsh plugin --profile web add dsh-obsidian-assistant
 
 # 2. 若上面命令不存在该子命令，则手动编辑 profile 清单：
 #    $DSH_HOME/profiles/web/package.json
@@ -31,7 +31,7 @@ dsh plugin --profile web add @mypj/obsidian-assistant
       "bundles": [
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-web-app",
-        "@mypj/obsidian-assistant"
+        "dsh-obsidian-assistant"
       ]
     }
   }
@@ -42,7 +42,7 @@ dsh plugin --profile web add @mypj/obsidian-assistant
 
 ```bash
 cd $DSH_HOME/profiles/web
-pnpm add @mypj/obsidian-assistant
+pnpm add dsh-obsidian-assistant
 ```
 
 ## 方式 B：作为用户 patch 层接入（不改 bundle 列表，最灵活、适合开发调试）
@@ -53,11 +53,11 @@ pnpm add @mypj/obsidian-assistant
 # 已存在的顶层数组里追加：
 - insert:
     - id: obsidian-assistant
-      name: '@mypj/obsidian-assistant'
+      name: 'dsh-obsidian-assistant'
       config:
         # 必填：改成你的真实 vault 绝对路径
         vaultPath: 'D:/my-notes'
-        apiUrl: 'http://127.0.0.1:27124'
+        apiUrl: 'https://127.0.0.1:27124'
         apiToken: ''
         enableRestApi: true
         excludePatterns: ['.obsidian', '.trash']
@@ -90,20 +90,20 @@ dsh --profile web
 
 ## 验证插件已加载
 
-启动日志中应出现 `obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 8 个 `obsidian_*` 工具。若未出现，常见原因：
+启动日志中应出现 `obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 11 个 `obsidian_*` 工具。若未出现，常见原因：
 
 1. **配置没生效**：确认 patch 里的 `vaultPath` 是绝对路径、无 YAML 缩进错误。
-2. **包没解析到**：确认 profile 的 `node_modules` 里有 `@mypj/obsidian-assistant`（`ls $DSH_HOME/profiles/web/node_modules/@mypj`）。
+2. **包没解析到**：确认 profile 的 `node_modules` 里有 `dsh-obsidian-assistant`（`ls $DSH_HOME/profiles/web/node_modules/dsh-obsidian-assistant`）。
 3. **inject 缺失**：本插件 `inject: ["tools", "fs"]`，需挂在 base bundle（提供 `tools` 与 `fs` 服务）之后；base 是第一个 bundle，天然满足。
 
 ## 本地开发闭环（不改 harness，先验证代码）
 
 ```bash
-cd obisdian-assistant
+cd dsh-obsidian-assistant
 npm install
 npm run build       # 编译到 lib/
 npm run smoke       # 核心逻辑冒烟测试（8 项）
-npm run test:int    # 集成测试（24 项：8 工具注册 + 读写/图谱/批量/链接重写/排除）
+npm run test:int    # 集成测试（28 项：11 工具注册 + 读写/图谱/批量/链接重写/排除/路径防护）
 ```
 
 ## 配置项速查
@@ -111,7 +111,7 @@ npm run test:int    # 集成测试（24 项：8 工具注册 + 读写/图谱/批
 | 字段 | 必填 | 默认 | 说明 |
 |---|---|---|---|
 | `vaultPath` | ✅ | — | vault 根目录绝对路径 |
-| `apiUrl` | | `http://127.0.0.1:27124` | Local REST API 地址 |
+| `apiUrl` | | `https://127.0.0.1:27124` | Local REST API 地址 |
 | `apiToken` | | `""` | Local REST API token |
 | `enableRestApi` | | `true` | 是否启用通道 B（不可用时自动降级） |
 | `excludePatterns` | | `[]` | 排除目录（配合 `.obsidian`、`.trash`） |

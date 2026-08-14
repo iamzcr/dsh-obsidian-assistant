@@ -1,0 +1,15 @@
+# Normalize line endings: text files commit as LF, checked out per-OS.
+* text=auto
+
+# Explicit text file types (always LF in the repo).
+*.ts    text eol=lf
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Generated/compiled output committed as built artifacts.
+lib/**/*.js   text eol=lf
+lib/**/*.d.ts text eol=lf

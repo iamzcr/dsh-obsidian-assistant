@@ -34,7 +34,7 @@ export class ObsidianApiClient {
   private _status: RestStatus = { available: false, reason: "not probed" };
 
   constructor(opts: { baseUrl: string; token?: string; enabled?: boolean }) {
-    this.baseUrl = (opts.baseUrl ?? "http://127.0.0.1:27124").replace(/\/+$/, "");
+    this.baseUrl = (opts.baseUrl ?? "https://127.0.0.1:27124").replace(/\/+$/, "");
     this.token = opts.token ?? "";
     this.enabled = opts.enabled ?? true;
   }
