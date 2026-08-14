@@ -81,10 +81,10 @@ export class ObsidianApiClient {
   private async ensure(signal?: AbortSignal): Promise<void> {
     if (!this._status.available && this.enabled) {
       const ok = await this.probe(signal);
-      if (!ok) throw new Error(`obsidian-assistant: Obsidian Local REST API unavailable (${this._status.reason})`);
+      if (!ok) throw new Error(`dsh-obsidian-assistant: Obsidian Local REST API unavailable (${this._status.reason})`);
     }
     if (!this._status.available) {
-      throw new Error(`obsidian-assistant: Obsidian Local REST API unavailable (${this._status.reason})`);
+      throw new Error(`dsh-obsidian-assistant: Obsidian Local REST API unavailable (${this._status.reason})`);
     }
   }
 
@@ -96,7 +96,7 @@ export class ObsidianApiClient {
     let data: unknown = text;
     try { data = JSON.parse(text); } catch { /* keep raw text */ }
     if (!res.ok) {
-      throw new Error(`obsidian-assistant: REST ${res.status}: ${text.slice(0, 200)}`);
+      throw new Error(`dsh-obsidian-assistant: REST ${res.status}: ${text.slice(0, 200)}`);
     }
     return { status: res.status, data };
   }
@@ -109,7 +109,7 @@ export class ObsidianApiClient {
     const q = encodeURIComponent(query);
     const ctx = opts.contextLength != null ? `&contextLength=${opts.contextLength}` : "";
     const res = await this.rawFetch(`/search/simple/?query=${q}${ctx}`, { method: "POST", signal: opts.signal });
-    if (!res.ok) throw new Error(`obsidian-assistant: search failed HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`dsh-obsidian-assistant: search failed HTTP ${res.status}`);
     const raw = await res.json();
     return normalizeSearchMatches(raw);
   }
@@ -118,7 +118,7 @@ export class ObsidianApiClient {
   async listCommands(signal?: AbortSignal): Promise<RestCommand[]> {
     await this.ensure(signal);
     const res = await this.rawFetch("/commands/", { method: "GET", signal });
-    if (!res.ok) throw new Error(`obsidian-assistant: list commands failed HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`dsh-obsidian-assistant: list commands failed HTTP ${res.status}`);
     const raw = await res.json();
     return normalizeCommands(raw);
   }
@@ -127,7 +127,7 @@ export class ObsidianApiClient {
   async runCommand(commandId: string, signal?: AbortSignal): Promise<void> {
     await this.ensure(signal);
     const res = await this.rawFetch(`/commands/${encodeURIComponent(commandId)}`, { method: "POST", signal, body: {} });
-    if (!res.ok) throw new Error(`obsidian-assistant: run command "${commandId}" failed HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`dsh-obsidian-assistant: run command "${commandId}" failed HTTP ${res.status}`);
   }
 
   /** Read a note's raw content via the REST API. */
@@ -137,7 +137,7 @@ export class ObsidianApiClient {
     // but directory structure stays intact.
     const encoded = relPath.split("/").map((seg) => encodeURIComponent(seg)).join("/");
     const res = await this.rawFetch(`/vault/${encoded}`, { method: "GET", signal });
-    if (!res.ok) throw new Error(`obsidian-assistant: read vault path failed HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`dsh-obsidian-assistant: read vault path failed HTTP ${res.status}`);
     const text = await res.text();
     // Tolerate both a raw-text body and a {content: ...} wrapper.
     try {

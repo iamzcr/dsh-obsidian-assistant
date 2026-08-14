@@ -1,5 +1,5 @@
 ---
-name: obsidian-assistant
+name: dsh-obsidian-assistant
 description: 操作本地 Obsidian 知识库：搜索、读写笔记、查询双向链接与关系图谱、批量整理，并可通过 Obsidian Local REST API 调用高级能力。
 whenToUse: 当用户要求查找、阅读、创作、编辑、分析或整理其本地 Obsidian vault 中的笔记时使用。
 ---

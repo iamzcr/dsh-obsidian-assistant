@@ -1,7 +1,25 @@
 {
   "name": "dsh-obsidian-assistant",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "DeepSeek Harness plugin (Cordis toolset) for reading, searching, and editing a local Obsidian vault, with optional Local REST API integration.",
+  "keywords": [
+    "obsidian",
+    "deepseek",
+    "harness",
+    "dsh",
+    "cordis",
+    "vault",
+    "notes",
+    "knowledge-base",
+    "second-brain"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iamzcr/dsh-obsidian-assistant.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

@@ -90,7 +90,7 @@ async function main() {
   await copyDir(fixtureVault, vaultPath);
 
   const pluginName = plugin.name;
-  check("exports name = obsidian-assistant", pluginName === "obsidian-assistant");
+  check("exports name = dsh-obsidian-assistant", pluginName === "dsh-obsidian-assistant");
 
   const fs = makeNodeFsBackend();
   const ctx = makeCtx(fs);

@@ -3,21 +3,16 @@
 # row adds the eleven obsidian_* tools to the shared tool registry.
 #
 # To use, add "dsh-obsidian-assistant" to your profile's `dsh.profile.bundles`
-# (or install it into `$DSH_HOME/profiles/<name>/node_modules`), then override
-# the `config.vaultPath` below (or set it here and re-install). A later layer
-# may target this row by id `obsidian-assistant` to change config or disable it.
+# (or install it into `$DSH_HOME/profiles/<name>/node_modules`), then provide
+# your vault path in your profile's cordis.patch.yml — `vaultPath` has no
+# portable default, so it is left out here on purpose. A later layer may target
+# this row by id `dsh-obsidian-assistant` to change config or disable it.
+#
+# Minimal example (your profile's cordis.patch.yml):
+#   - id: dsh-obsidian-assistant
+#     config:
+#       vaultPath: 'D:/my-notes'   # required: absolute path to your vault root
 
 - insert:
-    - id: obsidian-assistant
+    - id: dsh-obsidian-assistant
       name: 'dsh-obsidian-assistant'
-      config:
-        # REQUIRED: absolute path to your Obsidian vault root.
-        vaultPath: 'D:/my-notes'
-        # Optional: Obsidian "Local REST API" community plugin endpoint.
-        apiUrl: 'https://127.0.0.1:27124'
-        apiToken: ''
-        enableRestApi: true
-        excludePatterns:
-          - '.obsidian'
-          - '.trash'
-        maxResults: 50

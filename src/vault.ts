@@ -64,7 +64,7 @@ export class VaultService {
 
   constructor(deps: VaultDeps) {
     if (!isAbsolute(deps.vaultPath)) {
-      throw new Error(`obsidian-assistant: vaultPath must be absolute, got ${JSON.stringify(deps.vaultPath)}`);
+      throw new Error(`dsh-obsidian-assistant: vaultPath must be absolute, got ${JSON.stringify(deps.vaultPath)}`);
     }
     this.vaultPath = deps.vaultPath;
     this.fs = deps.fs;
@@ -80,12 +80,12 @@ export class VaultService {
     const normalized = relPath.replace(/\\/g, "/").replace(/^\/+/, "");
     if (normalized === "" || normalized === ".") return this.vaultPath;
     if (normalized === ".." || normalized.startsWith("../")) {
-      throw new Error(`obsidian-assistant: path escapes vault: ${JSON.stringify(relPath)}`);
+      throw new Error(`dsh-obsidian-assistant: path escapes vault: ${JSON.stringify(relPath)}`);
     }
     const abs = join(this.vaultPath, ...normalized.split("/"));
     const rel = relative(this.vaultPath, abs);
     if (rel.startsWith("..") || isAbsolute(rel)) {
-      throw new Error(`obsidian-assistant: path escapes vault: ${JSON.stringify(relPath)}`);
+      throw new Error(`dsh-obsidian-assistant: path escapes vault: ${JSON.stringify(relPath)}`);
     }
     return abs;
   }
@@ -137,7 +137,7 @@ export class VaultService {
       const target = await this.fs.resolve(abs);
       const info = await this.fs.stat(target, signal);
       if (info === undefined || info.type !== "file") {
-        throw new Error(`obsidian-assistant: not a file: ${rel}`);
+        throw new Error(`dsh-obsidian-assistant: not a file: ${rel}`);
       }
       raw = await this.fs.readText(target, signal);
     } else {
@@ -200,7 +200,7 @@ export class VaultService {
       const target = await this.fs.resolve(abs);
       const info = await this.fs.stat(target, opts.signal);
       if (info !== undefined && !opts.overwrite) {
-        throw new Error(`obsidian-assistant: note already exists: ${rel}`);
+        throw new Error(`dsh-obsidian-assistant: note already exists: ${rel}`);
       }
       const outcome = await this.fs.writeText(target, raw, undefined, opts.signal);
       return { path: rel, operation: outcome.operation };
@@ -214,7 +214,7 @@ export class VaultService {
       existed = true;
     } catch {}
     if (existed && !opts.overwrite) {
-      throw new Error(`obsidian-assistant: note already exists: ${rel}`);
+      throw new Error(`dsh-obsidian-assistant: note already exists: ${rel}`);
     }
     await writeFile(abs, raw, "utf8");
     return { path: rel, operation: existed ? "update" : "create" };
@@ -275,10 +275,10 @@ export class VaultService {
       const src = await this.fs.resolve(fromAbs);
       const dst = await this.fs.resolve(toAbs);
       const srcInfo = await this.fs.stat(src, opts.signal);
-      if (srcInfo === undefined) throw new Error(`obsidian-assistant: source not found: ${fromRel}`);
+      if (srcInfo === undefined) throw new Error(`dsh-obsidian-assistant: source not found: ${fromRel}`);
       const dstInfo = await this.fs.stat(dst, opts.signal);
       if (dstInfo !== undefined && !opts.overwrite) {
-        throw new Error(`obsidian-assistant: destination exists: ${toRel}`);
+        throw new Error(`dsh-obsidian-assistant: destination exists: ${toRel}`);
       }
       const content = await this.fs.readText(src, opts.signal);
       await this.fs.writeText(dst, content, undefined, opts.signal);
@@ -390,10 +390,10 @@ function applyLiteralEdit(current: string, oldString: string | undefined, newStr
   if (oldString === undefined) return current + newString;
   const idx = current.indexOf(oldString);
   if (idx < 0) {
-    throw new Error(`obsidian-assistant: oldString not found in ${rel}`);
+    throw new Error(`dsh-obsidian-assistant: oldString not found in ${rel}`);
   }
   if (!replaceAll && current.indexOf(oldString, idx + oldString.length) >= 0) {
-    throw new Error(`obsidian-assistant: oldString appears multiple times in ${rel}; set replaceAll or disambiguate`);
+    throw new Error(`dsh-obsidian-assistant: oldString appears multiple times in ${rel}; set replaceAll or disambiguate`);
   }
   return replaceAll
     ? current.split(oldString).join(newString)

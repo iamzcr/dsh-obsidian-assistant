@@ -35,20 +35,22 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 
 ## 安装与注册
 
-本插件是一个 **profile bundle**。完整、可操作的接入步骤见 [`DEPLOY.md`](./DEPLOY.md)。核心是在你的 profile 里追加本 bundle，或在 profile 的 `cordis.patch.yml` 里 `insert` 一条插件条目并指定 `config.vaultPath`：
+本插件是一个 **profile bundle**。完整、可操作的接入步骤见 [`DEPLOY.md`](./DEPLOY.md)。核心两步：
+
+1. 把 `dsh-obsidian-assistant` 加进 profile 的 bundles 列表（`$DSH_HOME/profiles/<name>/package.json` 的 `dsh.profile.bundles`）；
+2. 在 profile 的 `cordis.patch.yml` 里为它指定 `vaultPath`（唯一必填项，没有可移植的默认值，所以 bundle 里不预设）：
 
 ```yaml
 # $DSH_HOME/profiles/<name>/cordis.patch.yml（顶层数组里追加）
-- insert:
-    - id: obsidian-assistant
-      name: 'dsh-obsidian-assistant'
-      config:
-        vaultPath: 'D:/my-notes'            # 必填：vault 根目录（含 .obsidian 的目录）
-        apiUrl: 'https://127.0.0.1:27124'   # 可选：Local REST API（默认 https + 自签名）
-        apiToken: ''                        # 可选：Local REST API 插件设置的 API Key
-        enableRestApi: true                 # 可选：是否启用通道 B
-        excludePatterns: ['.obsidian', '.trash']
-        maxResults: 50                      # 可选：文件通道搜索返回上限
+- id: dsh-obsidian-assistant
+  config:
+    vaultPath: 'D:/my-notes'            # 必填：vault 根目录绝对路径（正斜杠）
+    # 以下均为可选，有默认值：
+    # apiUrl: 'https://127.0.0.1:27124'
+    # apiToken: ''
+    # enableRestApi: true
+    # excludePatterns: ['.obsidian', '.trash']
+    # maxResults: 50
 ```
 
 > 本插件 `inject: ["tools", "fs"]`，依赖 base bundle 提供的 `tools` 与 `fs` 服务，因此必须挂在 base bundle 之后（base 天然是第一个 bundle）。
@@ -61,7 +63,7 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 | `apiUrl` | | `https://127.0.0.1:27124` | Local REST API 地址 |
 | `apiToken` | | `""` | Local REST API 的 API Key（每个 vault 独立） |
 | `enableRestApi` | | `true` | 是否启用通道 B（不可用自动降级） |
-| `excludePatterns` | | `[]` | 排除目录（前缀匹配或 `*` 通配） |
+| `excludePatterns` | | `['.obsidian', '.trash']` | 排除目录（前缀匹配或 `*` 通配） |
 | `maxResults` | | `50` | 文件通道搜索最大命中数 |
 
 > ⚠️ **自签名证书**：Local REST API 默认 HTTPS + 自签名，本插件已在请求层用 `node:https`（`rejectUnauthorized: false`）容忍，无需额外设置环境变量。

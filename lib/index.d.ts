@@ -1,8 +1,12 @@
 import z from "@deepseek-ai/schemastery";
 import type { Context } from "@deepseek-ai/cordis";
-export declare const name = "obsidian-assistant";
+export declare const name = "dsh-obsidian-assistant";
 export declare const inject: string[];
-/** Schemastery config schema; defaults keep vault-independent fields optional in config files. */
+/**
+ * Schemastery config schema. `vaultPath` is optional here so the published
+ * bundle patch can omit it and the plugin still loads; `apply` then fails loud
+ * with an actionable message when it is missing or not absolute.
+ */
 export declare const Config: z<Schemastery.ObjectS<{
     vaultPath: z<string, string>;
     apiUrl: z<string, string>;

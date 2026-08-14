@@ -45,6 +45,15 @@ cd $DSH_HOME/profiles/web
 pnpm add dsh-obsidian-assistant
 ```
 
+> ⚠️ **必须配置 `vaultPath`**：bundle patch 不预设 `vaultPath`（没有可移植的默认值）。装好后，还需在 profile 的 `cordis.patch.yml` 里为它指定 vault 路径，否则插件加载时报 `vaultPath is required`：
+>
+> ```yaml
+> # $DSH_HOME/profiles/web/cordis.patch.yml（顶层数组里追加）
+> - id: dsh-obsidian-assistant
+>   config:
+>     vaultPath: 'D:/my-notes'   # 改成你的真实 vault 绝对路径
+> ```
+
 ## 方式 B：作为用户 patch 层接入（不改 bundle 列表，最灵活、适合开发调试）
 
 在你的 profile 的 `cordis.patch.yml`（`$DSH_HOME/profiles/web/cordis.patch.yml`）里追加一条 `insert`，直接挂载插件条目，并在此处覆盖 `config`：
@@ -52,7 +61,7 @@ pnpm add dsh-obsidian-assistant
 ```yaml
 # 已存在的顶层数组里追加：
 - insert:
-    - id: obsidian-assistant
+    - id: dsh-obsidian-assistant
       name: 'dsh-obsidian-assistant'
       config:
         # 必填：改成你的真实 vault 绝对路径
@@ -90,7 +99,7 @@ dsh --profile web
 
 ## 验证插件已加载
 
-启动日志中应出现 `obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 11 个 `obsidian_*` 工具。若未出现，常见原因：
+启动日志中应出现 `dsh-obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 11 个 `obsidian_*` 工具。若未出现，常见原因：
 
 1. **配置没生效**：确认 patch 里的 `vaultPath` 是绝对路径、无 YAML 缩进错误。
 2. **包没解析到**：确认 profile 的 `node_modules` 里有 `dsh-obsidian-assistant`（`ls $DSH_HOME/profiles/web/node_modules/dsh-obsidian-assistant`）。
@@ -114,5 +123,5 @@ npm run test:int    # 集成测试（28 项：11 工具注册 + 读写/图谱/�
 | `apiUrl` | | `https://127.0.0.1:27124` | Local REST API 地址 |
 | `apiToken` | | `""` | Local REST API token |
 | `enableRestApi` | | `true` | 是否启用通道 B（不可用时自动降级） |
-| `excludePatterns` | | `[]` | 排除目录（配合 `.obsidian`、`.trash`） |
+| `excludePatterns` | | `['.obsidian', '.trash']` | 排除目录（配合 `.obsidian`、`.trash`） |
 | `maxResults` | | `50` | 搜索最大命中数 |
