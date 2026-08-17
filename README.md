@@ -6,7 +6,7 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 
 ---
 
-## 功能一览（11 个工具）
+## 功能一览（12 个工具）
 
 ### 通道 A · 文件直读写（始终可用，不依赖 Obsidian 运行）
 
@@ -19,6 +19,7 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 | `obsidian_list_structure` | 文件夹树 + 标签统计 + 孤立笔记 |
 | `obsidian_backlinks` | 反向链接 + 出链 + tag 归属图谱 |
 | `obsidian_batch` | 批量移动 / 重命名，自动重写全库 `[[wikilink]]` |
+| `obsidian_export_novel` | 把 vault 里按 `第X章-标题` 命名的章节笔记，清洗成可粘贴到小说平台的 TXT / Markdown 文稿，按章号排序落盘 |
 
 ### 通道 B · Local REST API（需 Obsidian 运行 + 安装该社区插件）
 
@@ -85,13 +86,48 @@ DeepSeek Harness 插件（Cordis toolset）：操作本地 Obsidian 知识库（
 
 ---
 
+## Obsidian 小说导出（`obsidian_export_novel`）
+
+用于把 vault 里按 **`第X章-标题`** 命名的小说章节笔记，导出成**可直接粘贴到小说平台后台**（起点 / 番茄 / 晋江 / 纵横 / 飞卢 等）的文稿，零风险（不做浏览器自动化、不触碰平台风控）。
+
+**行为**
+- **识别章节**：文件名匹配 `第X章`（支持中文数字与阿拉伯数字）或裸数字章节（`12. 标题`）。
+- **排序**：按解析出的章号升序排序，不以 frontmatter 的 `章节` 字段为准（该字段常与文件名不一致）。
+- **排除**：`exclude` 可排掉整章（章号）或指定废稿（路径/标题子串），命中章号的重复/草稿一并跳过。
+- **清洗**：自动去掉 YAML frontmatter、`#` 标题标记、`>` 引用、`**粗体**`/`*斜体*`、`~~删除~~`、图片/链接/`[[wikilink]]`、脚注、HTML 注释与列表记号，保留正文；代码块 / 行内代码默认保留（`includeCode: false` 时整体去除）。
+- **落盘**：写入 vault 的 `<outDir>/<书名>_<UTC时间戳>/` 文件夹，每章一个 `.txt` 和/或 `.md` 文件。
+
+**参数**
+
+| 参数 | 默认 | 说明 |
+|---|---|---|
+| `format` | `both` | `txt` / `markdown` / `both`，每章产出对应格式文件 |
+| `folder` | 全库 | 可选，限定扫描的 vault 相对子目录（如 `小说`） |
+| `query` | 无 | 可选，按路径/标题子串过滤章节 |
+| `exclude` | 无 | 可选，排除章节。数字或 `第X章` 项排除整个章号（含其所有重复/草稿）；其他项按路径/标题子串（忽略大小写）排除废稿 |
+| `includeCode` | `true` | 是否保留代码块与行内代码 |
+| `outDir` | `导出` | 输出目录（vault 相对路径） |
+| `bookName` | folder 末段 / `小说` | 用来命名输出文件夹 |
+
+示例（在会话里让模型执行）：
+```
+把 小说/ 目录下的章节导出成 txt 方便我发布到起点
+```
+等价于调用 `obsidian_export_novel({ folder: "小说", format: "txt" })`，产出 `导出/小说_2026-08-17_153000/第一章-xxx.txt ...`。
+
+排除草稿/重复章节（例如库里有两份「第三章」、两份「他的浪漫代码」）：
+```
+导出 小说，但排除第 3 章和标题带 "浪漫代码" 的废稿
+```
+等价于 `obsidian_export_novel({ folder: "小说", format: "txt", exclude: ["3", "浪漫代码"] })`。
+
 ## 开发
 
 ```bash
 npm install
 npm run build       # 编译到 lib/
 npm run smoke       # 核心逻辑冒烟测试（不依赖 harness）
-npm run test:int    # 集成测试（验证 11 工具注册 + execute）
+npm run test:int    # 集成测试（验证 12 工具注册 + execute）
 npm run rest:smoke  # 通道 B 实时冒烟（需 OBSIDIAN_API_KEY / OBSIDIAN_API_URL 环境变量）
 ```
 
@@ -105,7 +141,8 @@ OBSIDIAN_API_KEY=<key> OBSIDIAN_API_URL=https://127.0.0.1:27124 npm run rest:smo
 
 ```
 src/
-  index.ts   插件入口（name/inject/Config/apply + 11 个工具注册）
+  index.ts   插件入口（name/inject/Config/apply + 12 个工具注册）
+  export.ts  小说导出（章节识别/排序/清洗/TXT+Markdown 渲染）
   vault.ts   VaultService（通道 A：读写/图谱/批量/链接重写/排除/路径防护）
   rest.ts    ObsidianApiClient（通道 B：探测 + 搜索/命令/透传，node:https 容忍自签名）
 scripts/

@@ -80,6 +80,21 @@ export declare class VaultService {
         tags: string[];
     }>>;
     /**
+     * Write raw content to an exact vault-relative path without appending `.md`.
+     * Parent directories are created as needed (the real harness `fs` backend does
+     * this implicitly; the Node fallback does it explicitly). Used for derived
+     * export files (e.g. TXT manuscripts) that are not themselves notes.
+     */
+    writeRaw(opts: {
+        relPath: string;
+        content: string;
+        overwrite?: boolean;
+        signal?: AbortSignal;
+    }): Promise<{
+        path: string;
+        operation: "create" | "update";
+    }>;
+    /**
      * Create a new note. `content` is the raw markdown body; frontmatter is
      * serialized to YAML and prepended when provided. Rejects overwriting an
      * existing note unless `overwrite` is true.
