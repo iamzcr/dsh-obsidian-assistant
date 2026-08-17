@@ -41,6 +41,7 @@ function makeNodeFsBackend() {
     },
     async writeText(target, content) {
       const p = pathOf(target);
+      await mkdir(dirname(p), { recursive: true });
       let existed = false;
       try { await stat(p); existed = true; } catch {}
       const before = existed ? await readFile(p, "utf8") : null;
@@ -97,7 +98,7 @@ async function main() {
   plugin.apply(ctx, { vaultPath, apiUrl: "http://127.0.0.1:27124", apiToken: "", enableRestApi: false, excludePatterns: [], maxResults: 50 });
 
   const names = ctx._registered.map((d) => d.name).sort();
-  check("registers 11 tools", names.length === 11, names.join(","));
+  check("registers 12 tools", names.length === 12, names.join(","));
   check("has obsidian_search", ctx.tools.get("obsidian_search") !== undefined);
   check("has obsidian_read_note", ctx.tools.get("obsidian_read_note") !== undefined);
   check("has obsidian_create_note", ctx.tools.get("obsidian_create_note") !== undefined);
@@ -105,6 +106,7 @@ async function main() {
   check("has obsidian_list_structure", ctx.tools.get("obsidian_list_structure") !== undefined);
   check("has obsidian_backlinks", ctx.tools.get("obsidian_backlinks") !== undefined);
   check("has obsidian_batch", ctx.tools.get("obsidian_batch") !== undefined);
+  check("has obsidian_export_novel", ctx.tools.get("obsidian_export_novel") !== undefined);
   check("has obsidian_rest_query", ctx.tools.get("obsidian_rest_query") !== undefined);
   check("has obsidian_rest_search", ctx.tools.get("obsidian_rest_search") !== undefined);
   check("has obsidian_list_commands", ctx.tools.get("obsidian_list_commands") !== undefined);
@@ -154,6 +156,37 @@ async function main() {
   check("batch moved file exists", movedExists);
   const refContent = await readFile(join(vaultPath, "Reference.md"), "utf8");
   check("move rewrites internal wikilink", refContent.includes("[[Moved Note]]") && !refContent.includes("[[New Note]]"), refContent);
+
+  // ── obsidian_export_novel: fixture 第X章 notes → txt + md manuscripts ──
+  await ctx.tools.get("obsidian_create_note").execute({
+    path: "小说/第一章-测试",
+    content: "# 第一章 测试\n\n这是**第一**章正文。\n\n```js\nconst a = 1;\n```\n",
+    frontmatter: { tags: ["小说"], 章节: "第一章" },
+  }, exec);
+  await ctx.tools.get("obsidian_create_note").execute({
+    path: "小说/第二章-再来",
+    frontmatter: { tags: ["小说"], 章节: "第二章" },
+    content: "# 第二章 再来\n\n-- 这是```code```第二章 ```inline``` 正文。\n",
+  }, exec);
+  const exportRes = await ctx.tools.get("obsidian_export_novel").execute({ format: "both", folder: "小说" }, exec);
+  check("export counts 2 chapters", exportRes.totalChapters === 2, JSON.stringify(exportRes.written));
+  check("export writes both formats", exportRes.written.some((w) => w.endsWith(".txt")) && exportRes.written.some((w) => w.endsWith(".md")), exportRes.written.join(","));
+  const outDirAbs = join(vaultPath, "导出");
+  const entries = await readdir(join(vaultPath, "导出"), { withFileTypes: true });
+  const stampDir = entries.find((e) => e.isDirectory())?.name;
+  check("export creates timestamped dir", !!stampDir, stampDir ?? "");
+  const actualDir = join(outDirAbs, stampDir);
+  const files = await readdir(actualDir);
+  check("export writes 4 files (2ch x2fmt)", files.length === 4, files.join(","));
+  const txt = await readFile(join(actualDir, files.find((f) => f.includes("第一章") && f.endsWith(".txt"))), "utf8");
+  check("txt keeps code when includeCode=true", txt.includes("const a = 1"), txt);
+  check("txt strips bold markers", !txt.includes("**"), txt);
+  const noCode = await ctx.tools.get("obsidian_export_novel").execute({ format: "txt", folder: "小说", includeCode: false }, exec);
+  check("includeCode=false still runs", noCode.totalChapters === 2, String(noCode.totalChapters));
+
+  // Obsidian/CommonMark stripping + exclude
+  const exclRes = await ctx.tools.get("obsidian_export_novel").execute({ format: "txt", folder: "小说", exclude: ["2", "再来"] }, exec);
+  check("exclude skips matched chapters", exclRes.totalChapters === 1 && exclRes.written.every((w) => w.includes("第一章")), exclRes.written.join(","));
 
   // exclude patterns: build a .trash note and a fresh service with excludePatterns
   await mkdir(join(vaultPath, ".trash"), { recursive: true });

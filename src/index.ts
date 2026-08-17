@@ -4,6 +4,7 @@ import type { Context } from "@deepseek-ai/cordis";
 import type { JsonValue } from "@deepseek-ai/dsh-session";
 import { VaultService } from "./vault.js";
 import { ObsidianApiClient } from "./rest.js";
+import { formatChapter, exportFolder, resolveBookName, listChapters } from "./export.js";
 
 export const name = "dsh-obsidian-assistant";
 export const inject = ["tools", "fs"];
@@ -471,5 +472,64 @@ export function apply(ctx: Context, config: ResolvedConfig): void {
       return { executed: true, commandId: args.commandId };
     },
     presentCall: (args) => ({ card: "generic", title: `Run command ${args.commandId}`, kind: "execute", rawInput: args.commandId }),
+  }));
+
+  // ── 12. obsidian_export_novel ──────────────────────────────────────────
+  // Turn the vault's 第X章 notes into clean TXT/Markdown manuscripts written
+  // under <outDir>/<book>_<stamp>/, ready to copy into a novel platform.
+  ctx.tools.register(defineTool({
+    name: "obsidian_export_novel",
+    description: `Export the vault's novel chapter notes (identified by filename like "第X章-标题") into clean TXT and/or Markdown manuscript files under a timestamped folder inside the vault, ordered by chapter number and with Obsidian/CommonMark markers removed. Ready to paste into a serialized-novel platform backend (起点/番茄/晋江/纵横/飞卢 etc.).`,
+    parameters: {
+      format: { type: "string", enum: ["txt", "markdown", "both"], description: "Output format. Default \"both\" (writes .txt and .md per chapter)." },
+      folder: { type: "string", description: "Optional vault-relative subdirectory to scan (e.g. \"小说\"). Defaults to the whole vault." },
+      query: { type: "string", description: "Optional substring to filter chapters by path/title." },
+      exclude: { type: "array", items: { type: "string" }, description: "Optional chapters to skip. A number or \"第X章\" entry excludes that whole chapter number (all duplicates); any other entry excludes by path/title substring (case-insensitive)." },
+      includeCode: { type: "boolean", description: "Keep code blocks/inline code verbatim. Default true. Set false to strip them for platforms that mangle code." },
+      outDir: { type: "string", description: "Vault-relative output directory. Default \"导出\"." },
+      bookName: { type: "string", description: "Book name used in the output folder name. Defaults to the last segment of `folder`, or \"小说\"." },
+    },
+    output: {
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          totalChapters: { type: "integer", required: true },
+          written: { type: "array", required: true, items: { type: "string" } },
+          outDir: { type: "string", required: true },
+        },
+      },
+      render: (_args, value) => [{
+        type: "text",
+        text: `Exported ${value.totalChapters} chapter(s) to ${value.outDir}:\n${value.written.map((w) => `- ${w}`).join("\n")}`,
+      }],
+    },
+    async execute(args, exec) {
+      const folder = args.folder?.trim() || undefined;
+      const query = args.query?.trim() || undefined;
+      const includeCode = args.includeCode !== false;
+      const format = (args.format as "txt" | "markdown" | "both") ?? "both";
+      const chapters = await listChapters(vault, { folder, query, exclude: args.exclude, includeCode }, exec.signal);
+      const bookName = resolveBookName(args.bookName, folder);
+      const folderName = exportFolder(bookName);
+      const outDir = (args.outDir?.trim() || "导出").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+
+      const written: string[] = [];
+      for (const ch of chapters) {
+        const base = `${outDir}/${folderName}/${ch.name}`;
+        if (format === "both" || format === "txt") {
+          const rel = `${base}.txt`;
+          const r = await vault.writeRaw({ relPath: rel, content: formatChapter(ch, "txt", includeCode), overwrite: true, signal: exec.signal });
+          written.push(r.path);
+        }
+        if (format === "both" || format === "markdown") {
+          const rel = `${base}.md`;
+          const r = await vault.writeRaw({ relPath: rel, content: formatChapter(ch, "markdown", includeCode), overwrite: true, signal: exec.signal });
+          written.push(r.path);
+        }
+      }
+      return { totalChapters: chapters.length, written, outDir: `${outDir}/${folderName}` };
+    },
+    presentCall: (args) => ({ card: "generic", title: `Export novel (${args.format ?? "both"})`, kind: "other", rawInput: args.bookName ?? args.folder }),
   }));
 }

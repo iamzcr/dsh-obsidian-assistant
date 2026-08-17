@@ -99,7 +99,7 @@ dsh --profile web
 
 ## 验证插件已加载
 
-启动日志中应出现 `dsh-obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 11 个 `obsidian_*` 工具。若未出现，常见原因：
+启动日志中应出现 `dsh-obsidian-assistant` 插件的加载记录，且模型可用工具集里多出 12 个 `obsidian_*` 工具。若未出现，常见原因：
 
 1. **配置没生效**：确认 patch 里的 `vaultPath` 是绝对路径、无 YAML 缩进错误。
 2. **包没解析到**：确认 profile 的 `node_modules` 里有 `dsh-obsidian-assistant`（`ls $DSH_HOME/profiles/web/node_modules/dsh-obsidian-assistant`）。
@@ -112,7 +112,7 @@ cd dsh-obsidian-assistant
 npm install
 npm run build       # 编译到 lib/
 npm run smoke       # 核心逻辑冒烟测试（8 项）
-npm run test:int    # 集成测试（28 项：11 工具注册 + 读写/图谱/批量/链接重写/排除/路径防护）
+npm run test:int    # 集成测试（验证 12 工具注册 + 读写/图谱/批量/导出/链接重写/排除/路径防护）
 ```
 
 ## 配置项速查

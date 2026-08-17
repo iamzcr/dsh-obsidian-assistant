@@ -19,6 +19,7 @@ whenToUse: 当用户要求查找、阅读、创作、编辑、分析或整理其
 | `obsidian_list_structure` | 文件夹树 + 标签统计 + 孤立笔记 |
 | `obsidian_backlinks` | 反向链接、出链与 tag 归属图谱 |
 | `obsidian_batch` | 批量移动/重命名（自动重写内部 `[[链接]]`） |
+| `obsidian_export_novel` | 把 `第X章-标题` 章节笔记清洗导出为 TXT/Markdown 小说文稿，按章号落盘到 `导出/`，可用 `exclude` 排除废稿/整章 |
 | `obsidian_rest_query` | 透传 Local REST API 任意端点（通道 B） |
 | `obsidian_rest_search` | Obsidian 内部索引高速全文搜索（通道 B，适合大库） |
 | `obsidian_list_commands` | 列出 Obsidian 命令（id + 名称，通道 B） |
@@ -31,7 +32,7 @@ whenToUse: 当用户要求查找、阅读、创作、编辑、分析或整理其
 3. **frontmatter 规范**：新增字段用合法 YAML；`tags` 用数组，别名用 `aliases`，创建时间用 `created`。
 4. **双向链接**：`[[笔记名]]` 用不含扩展名的笔记名；`[[笔记名#标题]]` 指向小节；`![[笔记名]]` 为嵌入。
 5. **标签**：`#kebab-case` 或 `#嵌套/标签`。
-6. **写作工具**：只读工具 `obsidian_search`/`read_note`/`list_structure`/`backlinks` 无需审批即可用；写工具 `create_note`/`update_note`/`batch` 优先走 harness 文件系统真实写入。
+6. **写作工具**：只读工具 `obsidian_search`/`read_note`/`list_structure`/`backlinks` 无需审批即可用；写工具 `create_note`/`update_note`/`batch`/`export_novel` 优先走 harness 文件系统真实写入。
 
 ## 双通道说明
 
@@ -45,4 +46,5 @@ whenToUse: 当用户要求查找、阅读、创作、编辑、分析或整理其
 - **"新建一篇 XX 笔记"**：`obsidian_create_note(path="XX", content="...", frontmatter={tags:[...]})`。
 - **"谁引用了这篇笔记"**：`obsidian_backlinks(note="笔记名")`。
 - **"整理库结构"**：`obsidian_list_structure` 先看树与孤立笔记，再 `obsidian_batch` 移动。
+- **"把小说导出方便发布到起点/番茄等平台"**：`obsidian_export_novel(folder="小说", format="txt"|"markdown"|"both", exclude=["章号或标题"], includeCode=...)` 把 `第X章` 章节清洗成可直接粘贴的文稿，落盘到 `导出/`；用 `exclude` 排掉废稿/重复章。
 - **"跑一下 XX 模板/命令"**：`obsidian_list_commands` 找命令 id → `obsidian_run_command(commandId=...)`。
